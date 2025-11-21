@@ -1,0 +1,9 @@
+# Ignore folders
+.venv/
+__pycache__
+
+
+# Ignore files
+.env
+.flaskenv
+.pytest_cache
