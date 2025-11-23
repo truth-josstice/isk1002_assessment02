@@ -1,110 +1,150 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import styles from "./Modals.module.scss";
-import { useLoginUser } from "../../utilities/customHooks/useAuth";
-import { useAuthContext } from "../../contexts/useAuthContext";
+/* 
+Purpose: Secure authentication screen which uses client-side validation to ensure no unnecessary API calls are made
+integrated with Flask JWT-Extended backend via Tanstack Query mutation and Axios api request.
+Key Decisions: 
+- Conditional rendering of content via AuthContext (React Navigation led to SDK 51 Android errors)
+- Client-side validation reduces server load
+- Custom hook useLoginUser abstracts axios and react-query logic
+*/
 
-function Login({ isOpen, onClose }) {
-  const { login: setGlobalAuth } = useAuthContext();
+import { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import { useAuth } from "../../context/AuthContext";
+import { useLoginUser } from "../../utilities/customHooks/useAuth.js";
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({ mode: "onChange" });
+export default function LoginScreen() {
+  // Simple state management for Login fields
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-  const { mutate: apiLogin, isPending, error: apiError } = useLoginUser();
+  // Simple state management for input errors
+  const [errors, setErrors] = useState({});
 
-  const onSubmit = (data) => {
-    apiLogin(data, {
-      onSuccess: (res) => {
-        setGlobalAuth(res.user, res.token);
-        toast.success("Login successful!");
-        setTimeout(() => {
-          onClose();
-        }, 800);
-      },
-    });
+  // Use login const from AuthContext provider to set the current user
+  const { login } = useAuth();
+
+  // Use Tanstack react query custom hook useLoginUser to make axios api.post login route request
+  const { mutate: apiLogin, isPending } = useLoginUser();
+
+  // Simple validation handler for input fields for user login match back end requirements
+  const validateAndSubmit = () => {
+    // Create a blank error object for any encountered errors
+    const newErrors = {};
+    // If there is no username:
+    if (!username.trim()) newErrors.username = "Username is required";
+    // IF there is no password
+    if (!password) newErrors.password = "Password is required";
+    // IF there is a password, but it's not long enough
+    if (password && password.length < 8)
+      newErrors.password = "Password must be at least 8 characters";
+
+    // Add errors to the blank error object
+    setErrors(newErrors);
+
+    // ONLY run the actual login mutation if there are no errors
+    if (Object.keys(newErrors).length === 0) {
+      // The actual mutation function
+      apiLogin(
+        // Uses username and password state values
+        { username, password },
+
+        // On successful api request
+        {
+          onSuccess: (response) => {
+            // attach the token using the AuthContext function
+            login(response["Authentication Bearer token"]);
+          },
+          // On api errors: return error response message
+          onError: (response) => Alert.alert("Login Failed", response.message),
+        }
+      );
+    }
   };
-  if (!isOpen) return null;
 
   return (
-    // Modal instead of Main
-    <CustomModal isOpen={isOpen} onRequestClose={onClose}>
-      {/* Close button :D */}
-      <button
-        type="button"
-        onClick={onClose}
-        className={styles.closeButton}
-        aria-label="Close login pop-up"
+    // Adjusted from previous assessment using correct react-native semantics
+    <View style={styles.container}>
+      <Text style={styles.title}> Welcome Back! </Text>
+      <Text style={styles.legend}>Login to your climbing log!</Text>
+
+      {/* The username field */}
+      <View style={styles.formField}>
+        <Text style={styles.label}>Username: </Text>
+        <TextInput
+          style={[styles.formInput, errors.username && styles.inputError]} // red error outline when errors occur with dynamic styling
+          placeholder="Enter your username..." // Placeholder in the field before entry
+          autoCapitalize="none" // Remove any capitals in the username field
+          autoComplete="username" // Will attempt to use any existing usernames if known
+          value={username} // The value passed to the mutation for username
+          onChangeText={setUsername} // Changes the username field's set value any time the text is changed
+        />
+        {/* Present an error message when validation rules are broken  */}
+        {errors.username && <Text style={styles.errorMessage}>{errors.username}</Text>}
+      </View>
+
+      {/* The password field */}
+      <View style={styles.formField}>
+        <Text style={styles.label}>Password: </Text>
+        <TextInput
+          style={[styles.formInput, errors.password && styles.inputError]}
+          placeholder="Enter your password..."
+          secureTextEntry // Ensures the password is NOT visible when being entered (standard security practice)
+          value={password}
+          onChangeText={setPassword}
+        />
+        {errors.password && <Text style={styles.errorMessage}>{errors.password}</Text>}
+      </View>
+
+      {/* TouchableOpacity is the same as button in semantic html */}
+      <TouchableOpacity
+        style={[styles.submitButton, isPending && styles.buttonLoading]}
+        onPress={validateAndSubmit}
+        disabled={isPending}
       >
-        {" "}
-        x{" "}
-      </button>
-
-      <form onSubmit={handleSubmit(onSubmit)} className={styles.modalForm}>
-        <h1> Welcome Back! </h1>
-
-        {/* fieldset for all form fields */}
-        <fieldset className={styles.inputGroup}>
-          {/* Legend for name of all fields */}
-          <legend>Login Credentials</legend>
-          <div className={styles.formField}>
-            <label htmlFor="email">Email: </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              {...register("email", {
-                // Input validation rules go here!
-                required: "Email is required", // Custom message for validation rule
-                pattern: {
-                  value: /^\S+@\S+$/i, // Check it is valid email format
-                  message: "Please enter a valid email address",
-                },
-              })}
-              // Conditional classes for styling appropriately
-              className={clsx(
-                styles.modalInput,
-                errors.email && styles.inputError // shared error class for styling
-              )}
-            />
-
-            {/* This runs when there are React Hook Form email errors! (Old code below) */}
-            <ErrorMessage error={errors.email?.message} className={styles.errorMessage} />
-          </div>
-          <div className={styles.formField}>
-            <label htmlFor="password">Password: </label>
-            <input
-              id="password"
-              type="password"
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 8, // Same as backend requirements
-                  message: "Password must be at least 8 characters",
-                },
-              })}
-              className={clsx(
-                styles.modalInput,
-                errors.password && styles.inputError // shared error class for styling
-              )}
-            />
-            {/* This runs when there are React Hook Form password errors (old code below) */}
-            <ErrorMessage error={errors.password?.message} className={styles.errorMessage} />
-          </div>
-        </fieldset>
-        {/* This runs when there are API errors! (Old code below) */}
-        <ErrorMessage error={apiError} className={styles.apiError} />
-        <button
-          type="submit"
-          disabled={isPending}
-          className={clsx(styles.modalButton, isPending && styles.buttonLoading)}
-        >
-          {isPending ? "Signing in..." : "Sign in"}
-        </button>
-      </form>
-    </CustomModal>
+        <Text style={styles.buttonText}> {isPending ? "Signing in..." : "Sign in"}</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
-export default Login;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+    padding: 32,
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 8,
+    color: "#0f172a",
+  },
+  legend: {
+    fontSize: 18,
+    textAlign: "center",
+    color: "#64748b",
+    marginBottom: 32,
+  },
+  formField: { marginBottom: 24 },
+  label: { fontSize: 16, fontWeight: "500", color: "#0f172a", marginBottom: 8 },
+  formInput: {
+    backgroundColor: "white",
+    borderWidth: 1.5,
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    padding: 16,
+    fontSize: 16,
+  },
+  inputError: { borderColor: "#ef4444" },
+  errorMessage: { color: "#ef4444", marginTop: 4, marginLeft: 4 },
+  submitButton: {
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonLoading: { backgroundColor: "#93c5fd" },
+  buttonText: { color: "white", fontSize: 18, fontWeight: "600" },
+});

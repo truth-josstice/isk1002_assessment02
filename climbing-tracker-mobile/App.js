@@ -1,20 +1,23 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./src/utilities/constants/queryClient";
+import { AuthProvider, useAuth } from "./src/context/AuthContext";
+
+import LoginScreen from "./src/pages/login/Login";
+import HomeScreen from "./src/pages/home/Home";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+function AppContent() {
+  const { user } = useAuth();
+  console.log("AuthGate render — user:", user);
+  return user ? <HomeScreen /> : <LoginScreen />;
+}
