@@ -48,7 +48,7 @@ export const createAttempt = async (climbId, attemptData) =>
   );
 
 export const getStyles = async () =>
-  callAPI(() => api.get("/learn/styles"), "Error retrieving styles");
+  callApi(() => api.get("/learn/styles"), "Error retrieving styles");
 
 export const getSkills = async () =>
-  callAPI(() => api.get("/learn/skills"), "Error retrieving skills");
+  callApi(() => api.get("/learn/skills"), "Error retrieving skills");

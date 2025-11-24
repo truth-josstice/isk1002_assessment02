@@ -12,7 +12,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from "reac
 import { useAuth } from "../../context/AuthContext";
 import { useLoginUser } from "../../utilities/customHooks/useAuth.js";
 
-export default function LoginScreen() {
+export default function LoginScreen({onNavigateToRegister}) {
   // Simple state management for Login fields
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -103,6 +103,10 @@ export default function LoginScreen() {
       >
         <Text style={styles.buttonText}> {isPending ? "Signing in..." : "Sign in"}</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.secondaryButton} onPress={onNavigateToRegister}>
+        <Text style={styles.secondaryButtonText}>Don't have an account? Sign up!</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -147,4 +151,14 @@ const styles = StyleSheet.create({
   },
   buttonLoading: { backgroundColor: "#93c5fd" },
   buttonText: { color: "white", fontSize: 18, fontWeight: "600" },
+  secondaryButton: {
+    padding: 16,
+    alignItems: "center",
+    marginTop: 16,
+  },
+  secondaryButtonText: {
+    color: "#2563eb",
+    fontSize: 16,
+    fontWeight: "500",
+  },
 });

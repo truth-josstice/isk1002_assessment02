@@ -14,7 +14,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useRegisterUser } from "../../utilities/customHooks/useAuth";
 import { useAllSkills } from "../../utilities/customHooks/useInfo";
 
-export default function Register() {
+export default function Register({ onNavigateToLogin }) {
   // Simple state management for Register fields
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -24,7 +24,7 @@ export default function Register() {
   const [lastName, setLastName] = useState("");
   const [selectedSkillId, setSelectedSkillId] = useState("");
 
-  const [errors, setErrors] = useState("");
+  const [errors, setErrors] = useState({});
 
   // Once the account is registered, log the user into the AuthContext
   const { login } = useAuth();
@@ -46,7 +46,7 @@ export default function Register() {
     if (!email.trim()) newErrors.email = "Email is required";
     else if (!/^\S+@\S+\.\S+$/.test(email)) newErrors.email = "Please enter a valid email";
     if (!password) newErrors.password = "Password is required";
-    else if (!passwordRegex.text(password))
+    else if (!passwordRegex.test(password))
       newErrors.password =
         "Password must be at least 8 characters and contain: one uppercase, one lowercase, one number, one special character";
     if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match";
@@ -61,12 +61,16 @@ export default function Register() {
           password,
           email,
           first_name: firstName,
-          last_name: lastName || null,
+          ...(lastName && { last_name: lastName }),
           skill_level_id: Number(selectedSkillId),
         },
         {
           onSuccess: (response) => {
-            login(response["Authentication Bearer token"]);
+            console.log("Registration successful, response:", response);
+
+            console.log("Token received:", response.access_token);
+
+            login(response.access_token);
           },
           onError: (response) => {
             Alert.alert("Registration Failed", response.message);
@@ -99,7 +103,7 @@ export default function Register() {
       <View style={styles.formField}>
         <Text style={styles.label}>Email:</Text>
         <TextInput
-          styles={[styles.formInput, errors.email && styles.inputError]}
+          style={[styles.formInput, errors.email && styles.inputError]}
           placeholder="Enter your email..."
           value={email}
           onChangeText={setEmail}
@@ -123,7 +127,7 @@ export default function Register() {
         {errors.firstName && <Text styles={styles.errorMessage}>{errors.firstName}</Text>}
       </View>
 
-      <View>
+      <View style={styles.formField}>
         <Text style={styles.label}>Last/Family name: </Text>
         <TextInput
           style={styles.formInput}
@@ -135,30 +139,33 @@ export default function Register() {
       </View>
 
       {/* Skill Level Dropdown */}
-      <View style={[styles.pickerWrapper, errors.skill && styles.inputError]}>
-        <Picker
-          selectedValue={selectedSkillId}
-          onValueChange={setSelectedSkillId}
-          enabled={!skillsLoading}
-          style={styles.picker}
-        >
-          <Picker.Item label="Select your skill level..." value="" />
-          {skills.map((skill) => (
-            <Picker.Item
-              key={skill.id}
-              label={`${skill.level} - ${skill.description.substring(0, 60)}...`}
-              value={skill.id}
-            />
-          ))}
-        </Picker>
+      <View style={[styles.formField, errors.skill && styles.inputError]}>
+        <Text style={styles.label}>Skill Level:</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedSkillId}
+            onValueChange={setSelectedSkillId}
+            enabled={!skillsLoading}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select your skill level..." value="" />
+            {skills.map((skill) => (
+              <Picker.Item
+                key={skill.id}
+                label={`${skill.level} - ${skill.description.substring(0, 60)}...`}
+                value={skill.id}
+              />
+            ))}
+          </Picker>
+        </View>
         {errors.skill && <Text style={styles.errorMessage}>{errors.skill}</Text>}
       </View>
 
       {/* Password */}
-      <View>
+      <View style={styles.formField}>
         <Text style={styles.label}>Password: </Text>
         <TextInput
-          styles={[styles.formInput, errors.password && styles.inputError]}
+          style={[styles.formInput, errors.password && styles.inputError]}
           placeholder="Enter your password..."
           value={password}
           onChangeText={setPassword}
@@ -169,7 +176,7 @@ export default function Register() {
       </View>
 
       {/* Confirm Password */}
-      <View>
+      <View style={styles.formField}>
         <Text style={styles.label}>Confirm Password: </Text>
         <TextInput
           style={[styles.formInput, errors.confirmPassword && styles.inputError]}
@@ -190,25 +197,28 @@ export default function Register() {
       >
         <Text style={styles.buttonText}>{isPending ? "Creating your account..." : "Register"}</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.secondaryButton} onPress={onNavigateToLogin}>
+        <Text style={styles.secondaryButtonText}>Already have an account? Sign in</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#f8fafc",
     padding: 32,
-    justifyContent: "center",
   },
   title: {
+    marginTop: 32,
     fontSize: 32,
     fontWeight: "700",
     textAlign: "center",
     marginBottom: 8,
     color: "#0f172a",
   },
-  legend: {
+  subtitle: {
     fontSize: 18,
     textAlign: "center",
     color: "#64748b",
@@ -233,6 +243,7 @@ const styles = StyleSheet.create({
   inputError: { borderColor: "#ef4444" },
   errorMessage: { color: "#ef4444", marginTop: 4, marginLeft: 4 },
   submitButton: {
+    marginTop: 16,
     backgroundColor: "#2563eb",
     padding: 16,
     borderRadius: 8,
@@ -240,4 +251,15 @@ const styles = StyleSheet.create({
   },
   buttonLoading: { backgroundColor: "#93c5fd" },
   buttonText: { color: "white", fontSize: 18, fontWeight: "600" },
+  secondaryButton: {
+    padding: 16,
+    alignItems: "center",
+    marginTop: 16,
+    marginBottom: 32,
+  },
+  secondaryButtonText: {
+    color: "#2563eb",
+    fontSize: 16,
+    fontWeight: "500",
+  },
 });
