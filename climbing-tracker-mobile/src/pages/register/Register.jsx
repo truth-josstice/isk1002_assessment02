@@ -1,161 +1,243 @@
 /* eslint-disable react/jsx-props-no-spreading */
-// React hook form provides form management without useState
-import clsx from "clsx";
-import styles from "./Register.module.scss";
-import { useForm } from "react-hook-form";
-import { useRegisterUser } from "../../utilities/customHooks";
-import { useAuthContext } from "../../contexts/useAuthContext";
-import toast from "react-hot-toast";
-import ErrorMessage from "../../components/common/ErrorMessage";
-import { useNavigate } from "react-router-dom";
-import { HOME } from "../../utilities/constants/routes";
+import { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { useAuth } from "../../context/AuthContext";
+import { useRegisterUser } from "../../utilities/customHooks/useAuth";
+import { useAllSkills } from "../../utilities/customHooks/useInfo";
 
 export default function Register() {
-  // Get auth context for login function
-  const { login: setGlobalAuth } = useAuthContext();
+  // Simple state management for Register fields
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [selectedSkillId, setSelectedSkillId] = useState("");
 
-  // formState allows RHF to track which fields have errors and what they are
-  const {
-    register, // attaches form content
-    handleSubmit, // runs when submitted
-    formState: { errors }, // real-time validation error tracking
-    watch, // to watch a particular value from a field in the form
-  } = useForm({ mode: "onChange" });
+  const [errors, setErrors] = useState("");
 
+  // Once the account is registered, log the user into the AuthContext
+  const { login } = useAuth();
   // Tanstack mutation hook for registering user
-  const { mutate: registerAccount, isPending, error: apiError } = useRegisterUser();
+  const { mutate: registerAccount, isPending } = useRegisterUser();
 
-  // Set up password watch for matching password check
-  const watchPassword = watch("password");
+  // Get skills for dropdown menu
+  const { data: skills = [], isLoading: skillsLoading } = useAllSkills();
 
-  const navigate = useNavigate(); // Create navigate hook instance
+  // Password Regex rules: 1 uppercase, one lowercase, one number, one special symbol, 8 char length
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+
   // What runs when the form is submitted and valid (handleSubmit automatically checks validation rules):
-  const onSubmit = (data) => {
-    const registrationData = {
-      email: data.email,
-      username: data.username,
-      password: data.password,
-    };
-    registerAccount(registrationData, {
-      onSuccess: (res) => {
-        // Use auth context to login the user automatically after registration
-        setGlobalAuth(res.user, res.token);
-        toast.success("Registration successful! You are now logged in.");
-        navigate(HOME); // Redirect to home page after success
-      },
-    });
+  const validateAndSubmit = () => {
+    const newErrors = {};
+
+    if (!username.trim()) newErrors.username = "Username is required";
+    if (!email.trim()) newErrors.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(email)) newErrors.email = "Please enter a valid email";
+    if (!password) newErrors.password = "Password is required";
+    else if (!passwordRegex.text(password))
+      newErrors.password =
+        "Password must be at least 8 characters and contain: one uppercase, one lowercase, one number, one special character";
+    if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+    if (!selectedSkillId) newErrors.skill = "Please select your skill level";
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      registerAccount(
+        {
+          username,
+          password,
+          email,
+          first_name: firstName,
+          last_name: lastName || null,
+          skill_level_id: Number(selectedSkillId),
+        },
+        {
+          onSuccess: (response) => {
+            login(response["Authentication Bearer token"]);
+          },
+          onError: (response) => {
+            Alert.alert("Registration Failed", response.message);
+          },
+        }
+      );
+    }
   };
 
   return (
-    // Main: the main content of this component
-    <main className={styles.registerContainer}>
-      <form onSubmit={handleSubmit(onSubmit)} className={styles.registerForm}>
-        <h1> Join the Century Screening Room! </h1>
-        {/* fieldset semantic HTML for all form fields */}
-        <fieldset className={styles.inputGroup}>
-          {/* Legend for name of all fields */}
-          <legend>Account Details</legend>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Create Your Account</Text>
+      <Text style={styles.subtitle}>Start logging your climbs today!</Text>
 
-          <div className={styles.inputField}>
-            <label htmlFor="email">Email: </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              {...register("email", {
-                // Input validation rules go here!
-                required: "Email is required", // Custom message for validation rule
-                pattern: {
-                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, // Check valid email
-                  message: "Please enter a valid email address",
-                },
-              })}
-              // Conditional classes for styling appropriately (like red border on error)
-              className={clsx(styles.registerInput, errors.email && styles.inputError)}
-            />
-            <br />
+      {/* Username */}
+      <View style={styles.formField}>
+        <Text style={styles.label}>Username: </Text>
+        <TextInput
+          style={[styles.formInput, errors.username && styles.inputError]}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+          autoComplete="username"
+        />
+        {errors.username && <Text style={styles.errorMessage}>{errors.username}</Text>}
+      </View>
 
-            {/* This runs when there are react hook form email errors */}
-            <ErrorMessage error={errors.email?.message} className={styles.errorMessage} />
-          </div>
+      {/* Email */}
+      <View style={styles.formField}>
+        <Text style={styles.label}>Email:</Text>
+        <TextInput
+          styles={[styles.formInput, errors.email && styles.inputError]}
+          placeholder="Enter your email..."
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          autoComplete="email"
+        />
+        {errors.email && <Text style={styles.errorMessage}>{errors.email}</Text>}
+      </View>
 
-          <div className={styles.inputField}>
-            <label htmlFor="username">Username: </label>
-            <input
-              id="username"
-              type="text"
-              autoComplete="username"
-              {...register("username", {
-                required: "Username is required",
-                minLength: {
-                  value: 2,
-                  message: "Username must be at least 2 characters",
-                },
-              })}
-              className={clsx(styles.registerInput, errors.username && styles.inputError)}
-            />
-            <br />
+      {/* Names */}
+      <View style={styles.formField}>
+        <Text style={styles.label}>First/Given name: </Text>
+        <TextInput
+          style={[styles.formInput, errors.firstName && styles.inputError]}
+          placeholder="Enter your first or given name..."
+          value={firstName}
+          onChangeText={setFirstName}
+          autoCapitalize="words"
+        />
+        {errors.firstName && <Text styles={styles.errorMessage}>{errors.firstName}</Text>}
+      </View>
 
-            {/* This runs when there are react hook form username errors */}
-            <ErrorMessage error={errors.username?.message} className={styles.errorMessage} />
-          </div>
+      <View>
+        <Text style={styles.label}>Last/Family name: </Text>
+        <TextInput
+          style={styles.formInput}
+          placeholder="Last or family name is optional..."
+          value={lastName}
+          onChangeText={setLastName}
+          autoCapitalize="words"
+        />
+      </View>
 
-          <div className={styles.inputField}>
-            <label htmlFor="password">Password: </label>
-            <input
-              id="password"
-              type="password"
-              {...register("password", {
-                required: "Password is required",
-                minLength: { value: 8, message: "Password must be at least 8 characters" },
-                pattern: {
-                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-                  message: "Requires one uppercase, lowercase, number & special character.",
-                },
-              })}
-              className={clsx(styles.registerInput, errors.password && styles.inputError)}
-            />
-            <br />
-
-            <small id="passwordInstructions">
-              Requires one uppercase, lowercase, number & special character.
-            </small>
-            <br />
-
-            {/* This runs when there are react hook form password errors */}
-            <ErrorMessage error={errors.password?.message} className={styles.errorMessage} />
-          </div>
-
-          <div className={styles.inputField}>
-            <label htmlFor="confirmPassword">Confirm password: </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              {...register("confirmPassword", {
-                required: "Please confirm your password",
-                validate: (value) => value === watchPassword || "Passwords do not match",
-              })}
-              className={clsx(styles.registerInput, errors.confirmPassword && styles.inputError)}
-            />
-            <br />
-
-            {/* This runs when there are react hook form confirm password errors */}
-            <ErrorMessage error={errors.confirmPassword?.message} className={styles.errorMessage} />
-          </div>
-        </fieldset>
-
-        {/* This runs when there are API level errors */}
-        <ErrorMessage error={apiError?.message} className={styles.apiError} />
-        <br />
-
-        <button
-          type="submit"
-          disabled={isPending}
-          className={clsx(styles.registerButton, isPending && styles.loadingButton)}
+      {/* Skill Level Dropdown */}
+      <View style={[styles.pickerWrapper, errors.skill && styles.inputError]}>
+        <Picker
+          selectedValue={selectedSkillId}
+          onValueChange={setSelectedSkillId}
+          enabled={!skillsLoading}
+          style={styles.picker}
         >
-          {isPending ? "Setting up account" : "Register"}
-        </button>
-      </form>
-    </main>
+          <Picker.Item label="Select your skill level..." value="" />
+          {skills.map((skill) => (
+            <Picker.Item
+              key={skill.id}
+              label={`${skill.level} - ${skill.description.substring(0, 60)}...`}
+              value={skill.id}
+            />
+          ))}
+        </Picker>
+        {errors.skill && <Text style={styles.errorMessage}>{errors.skill}</Text>}
+      </View>
+
+      {/* Password */}
+      <View>
+        <Text style={styles.label}>Password: </Text>
+        <TextInput
+          styles={[styles.formInput, errors.password && styles.inputError]}
+          placeholder="Enter your password..."
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoComplete="password-new"
+        />
+        {errors.password && <Text style={styles.errorMessage}>{errors.password}</Text>}
+      </View>
+
+      {/* Confirm Password */}
+      <View>
+        <Text style={styles.label}>Confirm Password: </Text>
+        <TextInput
+          style={[styles.formInput, errors.confirmPassword && styles.inputError]}
+          placeholder="Re-enter your password..."
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+        {errors.confirmPassword && (
+          <Text style={styles.errorMessage}>{errors.confirmPassword}</Text>
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={[styles.submitButton, isPending && styles.buttonLoading]}
+        onPress={validateAndSubmit}
+        disabled={isPending}
+      >
+        <Text style={styles.buttonText}>{isPending ? "Creating your account..." : "Register"}</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+    padding: 32,
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 8,
+    color: "#0f172a",
+  },
+  legend: {
+    fontSize: 18,
+    textAlign: "center",
+    color: "#64748b",
+    marginBottom: 32,
+  },
+  formField: { marginBottom: 24 },
+  label: { fontSize: 16, fontWeight: "500", color: "#0f172a", marginBottom: 8 },
+  formInput: {
+    backgroundColor: "white",
+    borderWidth: 1.5,
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    padding: 16,
+    fontSize: 16,
+  },
+  pickerWrapper: {
+    borderWidth: 1.5,
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    backgroundColor: "white",
+  },
+  inputError: { borderColor: "#ef4444" },
+  errorMessage: { color: "#ef4444", marginTop: 4, marginLeft: 4 },
+  submitButton: {
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonLoading: { backgroundColor: "#93c5fd" },
+  buttonText: { color: "white", fontSize: 18, fontWeight: "600" },
+});
