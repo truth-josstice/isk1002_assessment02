@@ -1,6 +1,7 @@
 // src/context/AuthContext.jsx   ← keep the same file path
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import { Alert } from "react-native";
 
 const AuthContext = createContext({});
 
@@ -15,6 +16,23 @@ const decodeJwt = (token) => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+
+  // Effect to handle invalid or expired tokens across the application
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setUser(null);
+      Alert.alert(
+        "Session Expired",
+        "Your login session has expired. Please sign in again to continue.",
+        [{ text: "OK" }]
+      );
+    };
+    window.addEventListener("authenticationExpired", handleAuthExpired);
+
+    return () => {
+      window.removeEventListener("authenticationExpired", handleAuthExpired);
+    };
+  }, []);
 
   // Load token on app start
   useEffect(() => {
@@ -42,9 +60,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, login, logout, isAuthenticated: !!user }}
-    >
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
