@@ -1,7 +1,7 @@
 // src/context/AuthContext.jsx   ← keep the same file path
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
-import { Alert } from "react-native";
+import { Alert, DeviceEventEmitter } from "react-native";
 
 const AuthContext = createContext({});
 
@@ -27,10 +27,11 @@ export const AuthProvider = ({ children }) => {
         [{ text: "OK" }]
       );
     };
-    window.addEventListener("authenticationExpired", handleAuthExpired);
+
+    const subscription = DeviceEventEmitter.addListener("authenticationExpired", handleAuthExpired);
 
     return () => {
-      window.removeEventListener("authenticationExpired", handleAuthExpired);
+      subscription.remove();
     };
   }, []);
 

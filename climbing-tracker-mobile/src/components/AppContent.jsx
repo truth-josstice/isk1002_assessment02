@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import LoginScreen from "../pages/login/Login";
-import HomeScreen from "../pages/home/Home";
-import Register from "../pages/register/Register";
+import LoginScreen from "../screens/login/Login";
+import HomeScreen from "../screens/home/Home";
+import Register from "../screens/register/Register";
 
 export default function AppContent() {
   const { user } = useAuth();

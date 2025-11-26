@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import { DeviceEventEmitter } from "react-native";
 
 // Set up const variable for API URL using process.env (Expo does not use import.meta like a React web project does)
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:5000";
@@ -46,9 +47,9 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       await SecureStore.deleteItemAsync("jwt");
-      
-      if(typeof window !== "undefined") {
-        window.dispatchEvent(new Event("authenticationExpired"));
+
+      if (typeof window !== "undefined") {
+        DeviceEventEmitter.emit("authenticationExpired");
       }
     }
     return Promise.reject(error);

@@ -9,10 +9,10 @@ Key Decisions:
 
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.js";
 import { useLoginUser } from "../../utilities/customHooks/useAuth.js";
 
-export default function LoginScreen({onNavigateToRegister}) {
+export default function LoginScreen({ onNavigateToRegister }) {
   // Simple state management for Login fields
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
