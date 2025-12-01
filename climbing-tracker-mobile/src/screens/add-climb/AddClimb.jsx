@@ -70,4 +70,63 @@ export default function AddClimbScreen({ onNavigateToHome }) {
       </View>
     );
   }
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <Text style={styles.title}>Add New Climb</Text>
+
+      {/* Gym Picker */}
+      <View style={[styles.formField, errors.gym && styles.inputError]}>
+        <Text style={styles.label}>Gym:</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedGymId}
+            onValueChange={setSelectedGymId}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select a gym..." value="" />
+            {gyms.map((gym) => (
+              <Picker.Item key={gym.id} label={formatGymLabel(gym)} value={gym.id.toString()} />
+            ))}
+          </Picker>
+        </View>
+        {errors.gym && <Text style={styles.errorMessage}>{errors.gym}</Text>}
+      </View>
+
+      {/* Style Picker */}
+      <View style={[styles.formField, errors.style && styles.inputError]}>
+        <Text style={styles.label}>Climbing Style:</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedStyleId}
+            onValueChange={setSelectedStyleId}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select a style..." value="" />
+            {styles.map((style) => (
+              <Picker.Item
+                key={style.id}
+                label={`${style.name} - ${style.description}`}
+                value={style.id.toString()}
+              />
+            ))}
+          </Picker>
+        </View>
+        {errors.style && <Text style={styles.errorMessage}>{errors.style}</Text>}
+      </View>
+
+      {/* Difficulty Grade Input */}
+      <View style={[styles.formField, errors.grade && styles.inputError]}>
+        <Text style={styles.label}>Difficulty Grade:</Text>
+        <TextInput 
+        style={styles.textInput}
+        value={difficultyGrade}
+        onChangeText={setDifficultyGrade}
+        placeholder="e.g., V4, 5.10a, 6a+, Purple, Red etc"
+        />
+        
+      </View>
+
+    </ScrollView>
+  );
 }
