@@ -10,13 +10,18 @@ import {
   Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+
 import { useAllStyles } from "../../utilities/customHooks/useInfo";
 import { useAllGyms } from "../../utilities/customHooks/useGyms";
 import { useAddClimb } from "../../utilities/customHooks/useClimbs";
+import { useAuth } from "../../context/AuthContext";
+
+import { getTodayDate } from "../../utilities/helpers/getTodayDate";
 
 export default function AddClimbScreen({ onNavigateToHome }) {
+  const { user } = useAuth();
   const { data: gyms = [], isLoading: gymsLoading } = useAllGyms();
-  const { data: styles = [], isLoading: stylesLoading } = useAllStyles();
+  const { data: climbStyles = [], isLoading: stylesLoading } = useAllStyles();
   const { mutate: addClimb, isPending } = useAddClimb();
 
   const [selectedGymId, setSelectedGymId] = useState("");
@@ -43,7 +48,8 @@ export default function AddClimbScreen({ onNavigateToHome }) {
       gym_id: parseInt(selectedGymId),
       style_id: parseInt(selectedStyleId),
       difficulty_grade: difficultyGrade,
-      ...(setDate.trim() && { set_date: setDate }),
+      user_id: user.id,
+      set_date: setDate.trim() || getTodayDate(),
     };
 
     addClimb(climbData, {
@@ -103,7 +109,7 @@ export default function AddClimbScreen({ onNavigateToHome }) {
             style={styles.picker}
           >
             <Picker.Item label="Select a style..." value="" />
-            {styles.map((style) => (
+            {climbStyles.map((style) => (
               <Picker.Item
                 key={style.id}
                 label={`${style.name} - ${style.description}`}
@@ -132,11 +138,11 @@ export default function AddClimbScreen({ onNavigateToHome }) {
       {/* Set Date Input (Optional) */}
       <View style={styles.formField}>
         <Text style={styles.label}>Set Date: </Text>
-        <TextInput 
-        style={styles.textInput}
-        value={setDate}
-        onChangeText={setSetDate}
-        placeholder="YYYY-MM-DD"
+        <TextInput
+          style={styles.textInput}
+          value={setDate}
+          onChangeText={setSetDate}
+          placeholder={`${getTodayDate()} (or manually enter YYYY-MM-DD)`}
         />
         <Text style={styles.infoText}>Leave blank if unknown</Text>
       </View>
@@ -152,16 +158,15 @@ export default function AddClimbScreen({ onNavigateToHome }) {
         </TouchableOpacity>
 
         <TouchableOpacity
-        onPress={handleSubmit}
-        style={[styles.button, styles.submitButton]}
-        disabled={isPending}
+          onPress={handleSubmit}
+          style={[styles.button, styles.submitButton]}
+          disabled={isPending}
         >
-            {isPending ? (
-                <ActivityIndicator size="small" color="white"/>
-            ) : (
-                <Text style={styles.submitButtonText}>Add Climb</Text>
-            )}
-
+          {isPending ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={styles.submitButtonText}>Add Climb</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>

@@ -10,7 +10,7 @@ export const useAllClimbs = () =>
 export const useAddClimb = () => {
   const queryClient = useQueryClient();
 
-  useMutation({
+  return useMutation({
     mutationFn: createClimb,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-climbs"] });

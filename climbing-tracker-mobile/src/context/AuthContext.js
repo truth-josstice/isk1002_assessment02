@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         const payload = decodeJwt(token);
         if (payload) {
-          setUser({ token, username: payload.username });
+          setUser({ token, username: payload.username, id: payload.sub });
         }
       }
     };
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (token) => {
     await SecureStore.setItemAsync("jwt", token);
     const payload = decodeJwt(token);
-    setUser({ token, username: payload.username });
+    setUser({ token, username: payload.username, id: payload.sub });
   };
 
   const logout = async () => {

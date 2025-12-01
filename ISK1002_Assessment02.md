@@ -37,7 +37,9 @@ I have used GitHub projects for the first time, and will look to link all planne
 ![A screenshot of the Kanban Board Cards for this project](assets/images/GitHub-Projects-Kanban-Board.png)
 ![A screenshot of the sprint Github Projects timeline for this project](assets/images/GitHub-Projects-Sprint-Timeline.png)
 
-# TroubleShooting
+---
+
+## TroubleShooting Breakdown for later Reference
 
 JWT Storage and Persistence
 
@@ -45,8 +47,8 @@ JWT Storage and Persistence
 
 React-Native Navigation/Stack
 
-- Came upon an Android SDK error which would not allow me to use navigation Stack, after researching similar errors (java.lang.bool java.lang string) I couldn't really parse the error or where it was occuring, I opted instead to simplify and useStates and effects to navigate what would be essentially five pages. 
-- Android specific errors occured during dev
+- Came upon an Android SDK error which would not allow me to use navigation Stack, after researching similar errors (java.lang.bool java.lang string) I couldn't really parse the error or where it was occurring, I opted instead to simplify and useStates and effects to navigate what would be essentially five pages.
+- Android specific errors occurred during dev
 
 ReactNative display complications
 
@@ -55,8 +57,99 @@ ReactNative display complications
 JWT token needed manual decoding through front end
 
 - Back end only returns token on login, payload needed to be decoded frontEnd side
-- Username was not included with token, adjusted backend API response to send username for initial HomeScreen duisplay (fewer API requests lighter server load)
+- Username was not included with token, adjusted backend API response to send username for initial HomeScreen display (fewer API requests lighter server load)
 
 Climb data structure meant mapping was complicated
 
 - Back end returned a nested array of objects, which made mapping more complex
+
+AddClimb mutation
+
+- needed to explicitly return in the mutation function
+
+Styles data was name clashing with styles (stylesheet)
+
+- adjusted styles data name
+
+BackendAPI schema only accepted INT for climb difficulty grade
+
+- adjusted backend Schema to match model, accepts string
+
+## Minimalist Enhancement: Extending Auth Context
+
+**The Situation:**
+I had a working authentication system but needed to expose `user_id` from JWT tokens without over-engineering.
+
+**Existing Architecture:**
+
+```javascript
+// Original user object
+const user = {
+  token: "eyJhbGciOi...",
+  username: "climber123",
+  // Missing: user_id needed for API requests
+};
+
+// Enhanced user object
+const user = {
+  token: "eyJhbGciOi...",
+  username: "climber123",
+  id: 42, // Added from JWT 'sub' claim
+};
+
+// Two-line change in auth context
+const payload = decodeJwt(token);
+setUser({
+  token,
+  username: payload.username,
+  id: parseInt(payload.sub), // New field
+});
+```
+
+// Before: Complex token decoding in every component
+const decoded = decodeJwt(token);
+const userId = decoded.sub;
+
+// After: Simple property access
+const userId = user.id;
+
+---
+
+## Keeping It Simple: Smart Defaults Without Complexity
+
+**The Problem:** Needed optional date field with sensible defaults but didn't want to over-engineer.
+
+**My Philosophy:**
+When faced with multiple "correct" solutions, choose the **simplest one that works**.
+
+**Initial Over-Thinking:**
+
+- Complex validation functions
+- Date picker components
+- Multiple UI states
+- Backend schema changes
+
+**The Simple Solution:**
+
+```javascript
+// Either use what user entered, or default to today
+
+//Create tiny helper function
+export const getTodayDate = () => {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
+    today.getDate()
+  ).padStart(2, "0")}`;
+};
+
+// in the request
+set_date: setDate.trim() || getTodayDate(),
+  
+// In the form, show users today's date or ask explicitly for correct format:
+<TextInput
+    style={styles.textInput}
+    value={setDate}
+    onChangeText={setSetDate}
+    placeholder={`${getTodayDate()} (or manually enter YYYY-MM-DD)`}
+/>
+```
