@@ -118,15 +118,145 @@ export default function AddClimbScreen({ onNavigateToHome }) {
       {/* Difficulty Grade Input */}
       <View style={[styles.formField, errors.grade && styles.inputError]}>
         <Text style={styles.label}>Difficulty Grade:</Text>
-        <TextInput 
-        style={styles.textInput}
-        value={difficultyGrade}
-        onChangeText={setDifficultyGrade}
-        placeholder="e.g., V4, 5.10a, 6a+, Purple, Red etc"
+        <TextInput
+          style={styles.textInput}
+          value={difficultyGrade}
+          onChangeText={setDifficultyGrade}
+          placeholder="e.g., V4, 5.10a, 6a+, Purple, Red etc"
         />
-        
+        <Text style={styles.infoText}>
+          Different gyms have different ratings, use whichever you like most!
+        </Text>
       </View>
 
+      {/* Set Date Input (Optional) */}
+      <View style={styles.formField}>
+        <Text style={styles.label}>Set Date: </Text>
+        <TextInput 
+        style={styles.textInput}
+        value={setDate}
+        onChangeText={setSetDate}
+        placeholder="YYYY-MM-DD"
+        />
+        <Text style={styles.infoText}>Leave blank if unknown</Text>
+      </View>
+
+      {/* Buttons */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          onPress={onNavigateToHome}
+          style={[styles.button, styles.cancelButton]}
+          disabled={isPending}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+        onPress={handleSubmit}
+        style={[styles.button, styles.submitButton]}
+        disabled={isPending}
+        >
+            {isPending ? (
+                <ActivityIndicator size="small" color="white"/>
+            ) : (
+                <Text style={styles.submitButtonText}>Add Climb</Text>
+            )}
+
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#0f172a",
+    textAlign: "center",
+    marginBottom: 30,
+    marginTop: 20,
+  },
+  formField: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 8,
+  },
+  pickerWrapper: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    backgroundColor: "white",
+  },
+  picker: {
+    backgroundColor: "white",
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "white",
+  },
+  inputError: {
+    borderColor: "#ef4444",
+  },
+  errorMessage: {
+    color: "#ef4444",
+    fontSize: 14,
+    marginTop: 4,
+  },
+  infoText: {
+    color: "#64748b",
+    fontSize: 12,
+    marginTop: 4,
+    fontStyle: "italic",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 30,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: "#6b7280",
+  },
+  cancelButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  submitButton: {
+    backgroundColor: "#2563eb",
+  },
+  submitButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#64748b",
+    textAlign: "center",
+  },
+});

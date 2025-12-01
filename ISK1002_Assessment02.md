@@ -36,3 +36,27 @@ I have used GitHub projects for the first time, and will look to link all planne
 ![A screenshot of the main table of tasks for this project](assets/images/GitHub-Projects-Main-Table.png)
 ![A screenshot of the Kanban Board Cards for this project](assets/images/GitHub-Projects-Kanban-Board.png)
 ![A screenshot of the sprint Github Projects timeline for this project](assets/images/GitHub-Projects-Sprint-Timeline.png)
+
+# TroubleShooting
+
+JWT Storage and Persistence
+
+- Added JWT extended life for easier development, still not implementing refresh tokens as the use case for climbing would be on a per session basis (roughly 90 mins on average at a gym)
+
+React-Native Navigation/Stack
+
+- Came upon an Android SDK error which would not allow me to use navigation Stack, after researching similar errors (java.lang.bool java.lang string) I couldn't really parse the error or where it was occuring, I opted instead to simplify and useStates and effects to navigate what would be essentially five pages. 
+- Android specific errors occured during dev
+
+ReactNative display complications
+
+- FlatList limitations with ScrollView meant needed to re-style...
+
+JWT token needed manual decoding through front end
+
+- Back end only returns token on login, payload needed to be decoded frontEnd side
+- Username was not included with token, adjusted backend API response to send username for initial HomeScreen duisplay (fewer API requests lighter server load)
+
+Climb data structure meant mapping was complicated
+
+- Back end returned a nested array of objects, which made mapping more complex
