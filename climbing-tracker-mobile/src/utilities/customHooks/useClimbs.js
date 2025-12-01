@@ -13,7 +13,7 @@ export const useAddClimb = () => {
   useMutation({
     mutationFn: createClimb,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-limbs"] });
+      queryClient.invalidateQueries({ queryKey: ["user-climbs"] });
     },
   });
 };

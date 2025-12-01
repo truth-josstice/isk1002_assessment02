@@ -11,7 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useAllClimbs } from "../../utilities/customHooks/useClimbs";
 import { useAllAttempts } from "../../utilities/customHooks/useAttempts";
 
-export default function HomeScreen() {
+export default function HomeScreen({onNavigateToAddClimb, onNavigateToAddAttempt}) {
   const { user, logout } = useAuth();
   const { data: climbs = [], isLoading: climbsLoading } = useAllClimbs();
   const { data: attemptsData = {}, isLoading: attemptsLoading } = useAllAttempts();
@@ -87,10 +87,10 @@ export default function HomeScreen() {
       <TouchableOpacity onPress={logout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.addAttemptButton}>
+      <TouchableOpacity onPress={onNavigateToAddAttempt} style={styles.addAttemptButton}>
         <Text style={styles.addButtonIcon}>Add Attempt</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.addClimbButton}>
+      <TouchableOpacity onPress={onNavigateToAddClimb} style={styles.addClimbButton}>
         <Text style={styles.addButtonIcon}>Add Climb</Text>
       </TouchableOpacity>
     </View>

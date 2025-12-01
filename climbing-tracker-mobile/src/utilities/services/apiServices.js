@@ -78,3 +78,6 @@ export const getStyles = async () =>
 
 export const getSkills = async () =>
   callApi(() => api.get("/learn/skills"), "Error retrieving skills");
+
+export const getGyms = async () => 
+  callApi(() => api.get("/gyms"), "Error retrieving gyms");

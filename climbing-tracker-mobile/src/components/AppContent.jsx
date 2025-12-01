@@ -12,9 +12,29 @@ export default function AppContent() {
 
   // If user is Authenticated
   if (user) {
-    return <HomeScreen />;
+    switch (currentScreen) {
+      case "home":
+        return (
+          <HomeScreen
+            onNavigateToAddClimb={() => setCurrentScreen("addClimb")}
+            onNavigateToAddAttempt={() => setCurrentScreen("addAttempt")}
+          />
+        );
+      case "addClimb":
+        return <AddClimbScreen onNavigateToHome={() => setCurrentScreen("home")} />;
+      case "addAttempt":
+        return <AddAttemptScreen onNavigateToHome={() => setCurrentScreen("home")} />;
+      default:
+        return (
+          <HomeScreen
+            onNavigateToAddClimb={() => setCurrentScreen("addClimb")}
+            onNavigateToAddAttempt={() => setCurrentScreen("addAttempt")}
+          />
+        );
+    }
   }
 
+  // IF user is NOT authenticated
   switch (currentScreen) {
     case "login":
       return <LoginScreen onNavigateToRegister={() => setCurrentScreen("register")} />;
