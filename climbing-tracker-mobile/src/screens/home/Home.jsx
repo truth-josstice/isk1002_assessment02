@@ -95,9 +95,6 @@ export default function HomeScreen({onNavigateToAddClimb, onNavigateToAddAttempt
       <TouchableOpacity onPress={logout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={onNavigateToAddAttempt} style={styles.addAttemptButton}>
-        <Text style={styles.addButtonIcon}>Add Attempt</Text>
-      </TouchableOpacity>
       <TouchableOpacity onPress={onNavigateToAddClimb} style={styles.addClimbButton}>
         <Text style={styles.addButtonIcon}>Add Climb</Text>
       </TouchableOpacity>
