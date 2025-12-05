@@ -30,7 +30,7 @@ export default function StarRating({ initialRating = 0, onRatingChange, disabled
             disabled={disabled}
             activeOpacity={0.7}
           >
-            <Text style={styles.starIcon}>⭐</Text>
+            <Text style={[styles.starIcon, star <= rating && styles.filledStarIcon]}>⭐</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -74,6 +74,11 @@ const styles = StyleSheet.create({
   },
   starIcon: {
     fontSize: 32,
+    opacity: 0.3,
+  },
+  filledStarIcon: {
+    color: "#f59e0b",
+    opacity: 1,
   },
   ratingText: {
     fontSize: 14,

@@ -4,6 +4,7 @@ import LoginScreen from "../screens/login/Login";
 import HomeScreen from "../screens/home/Home";
 import Register from "../screens/register/Register";
 import AddClimbScreen from "../screens/add-climb/AddClimb";
+import AddAttemptScreen from "../screens/add-attempt/AddAttempt";
 
 export default function AppContent() {
   const { user } = useAuth();

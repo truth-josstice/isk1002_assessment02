@@ -12,6 +12,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useAddAttempt } from "../../utilities/customHooks/useAttempts";
 import StarRating from "../../components/StarRating";
+import { useState } from "react";
 
 export default function AddAttemptScreen({ climb, onNavigateToHome }) {
   const { user } = useAuth();

@@ -70,8 +70,8 @@ export const createClimb = async (climbData) =>
 export const getAttempts = async () =>
   callApi(() => api.get("/attempts"), "Error fetching attempts");
 
-export const createAttempt = async (climbId, attemptData) =>
-  callApi(() => api.post(`/climbs/${climbId}/attempts`, attemptData), "Error adding attempt");
+export const createAttempt = async (attemptData) =>
+  callApi(() => api.post(`/attempts`, attemptData), "Error adding attempt");
 
 export const getStyles = async () =>
   callApi(() => api.get("/learn/styles"), "Error retrieving styles");
