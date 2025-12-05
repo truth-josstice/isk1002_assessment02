@@ -67,7 +67,7 @@ export default function HomeScreen({ onNavigateToAddClimb, onNavigateToAddAttemp
 
         {/* Climbs Section */}
         <Text style={styles.sectionTitle}>Current Climbs Added by Users</Text>
-        <Text style={styles.infoText}>Click a climb to add an attempt!</Text>
+        <Text style={styles.infoText}>Tap a climb to add an attempt!</Text>
         {climbsLoading ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color="#2563eb" />

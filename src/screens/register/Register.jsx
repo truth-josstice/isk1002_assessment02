@@ -14,7 +14,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useRegisterUser } from "../../utilities/customHooks/useAuth";
 import { useAllSkills } from "../../utilities/customHooks/useInfo";
 
-export default function Register({ onNavigateToLogin }) {
+export default function RegisterScreen({ onNavigateToLogin }) {
   // Simple state management for Register fields
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");

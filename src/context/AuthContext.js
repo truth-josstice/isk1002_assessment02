@@ -14,8 +14,23 @@ const decodeJwt = (token) => {
   }
 };
 
+const isTokenExpired = (token) => {
+  try {
+    const payload = decodeJwt(token);
+    if (!payload || !payload.exp) return true;
+
+    const expiryInMs = payload.exp * 1000;
+    const now = Date.now();
+
+    return now >= expiryInMs - 5000;
+  } catch (error) {
+    return true;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Effect to handle invalid or expired tokens across the application
   useEffect(() => {
@@ -38,13 +53,21 @@ export const AuthProvider = ({ children }) => {
   // Load token on app start
   useEffect(() => {
     const loadToken = async () => {
+      setIsLoading(true);
       const token = await SecureStore.getItemAsync("jwt");
       if (token) {
-        const payload = decodeJwt(token);
-        if (payload) {
-          setUser({ token, username: payload.username, id: payload.sub });
+        if (isTokenExpired(token)) {
+          setUser(null);
+        } else {
+          const payload = decodeJwt(token);
+          if (payload) {
+            setUser({ token, username: payload.username, id: parseInt(payload.sub) });
+          } else {
+            setUser(null);
+          }
         }
       }
+      setIsLoading(false);
     };
     loadToken();
   }, []);
@@ -61,7 +84,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
