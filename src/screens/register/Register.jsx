@@ -24,6 +24,7 @@ export default function RegisterScreen({ onNavigateToLogin }) {
   const [lastName, setLastName] = useState("");
   const [selectedSkillId, setSelectedSkillId] = useState("");
 
+  // Blank error object for error displays
   const [errors, setErrors] = useState({});
 
   // Once the account is registered, log the user into the AuthContext
@@ -42,38 +43,48 @@ export default function RegisterScreen({ onNavigateToLogin }) {
   const validateAndSubmit = () => {
     const newErrors = {};
 
+    // Username validation: username is required
     if (!username.trim()) newErrors.username = "Username is required";
+
+    // Email requirements: email is required, and must be valid email format
     if (!email.trim()) newErrors.email = "Email is required";
     else if (!/^\S+@\S+\.\S+$/.test(email)) newErrors.email = "Please enter a valid email";
+
+    // Password requirements: password is required, must meet complexity standards matching the backend
     if (!password) newErrors.password = "Password is required";
     else if (!passwordRegex.test(password))
       newErrors.password =
         "Password must be at least 8 characters and contain: one uppercase, one lowercase, one number, one special character";
+
+    // Users must confirm password
     if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+
+    // Skill level requirements: skill level is required
     if (!selectedSkillId) newErrors.skill = "Please select your skill level";
 
+    // Update the error object with any errors which have occurred
     setErrors(newErrors);
 
+    // If there are NO errors in newErrors object, proceed to mutation function
     if (Object.keys(newErrors).length === 0) {
+      // The actual mutation function occurs here with data from the form:
       registerAccount(
         {
           username,
           password,
           email,
-          first_name: firstName,
-          ...(lastName && { last_name: lastName }),
-          skill_level_id: Number(selectedSkillId),
+          first_name: firstName, // Match the SQL model first_name
+          ...(lastName && { last_name: lastName }), // IF last name is provided use it, otherwise do not provide
+          skill_level_id: Number(selectedSkillId), // Ensure selected skill ID is converted to a number
         },
+
+        // Success management:
         {
           onSuccess: (response) => {
-            console.log("Registration successful, response:", response);
-
-            console.log("Token received:", response.access_token);
-
-            login(response.access_token);
+            login(response.access_token); // Set the current user using the response token
           },
           onError: (response) => {
-            Alert.alert("Registration Failed", response.message);
+            Alert.alert("Registration Failed", response.message); // Respond with the API error message (response.message)
           },
         }
       );
@@ -81,6 +92,7 @@ export default function RegisterScreen({ onNavigateToLogin }) {
   };
 
   return (
+    // Container for the entire register screen
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Create Your Account</Text>
       <Text style={styles.subtitle}>Start logging your climbs today!</Text>
@@ -89,13 +101,14 @@ export default function RegisterScreen({ onNavigateToLogin }) {
       <View style={styles.formField}>
         <Text style={styles.label}>Username: </Text>
         <TextInput
-          style={[styles.formInput, errors.username && styles.inputError]}
+          style={[styles.formInput, errors.username && styles.inputError]} // Conditional styling to highlight errors
           placeholder="Username"
           value={username}
           onChangeText={setUsername}
           autoCapitalize="none"
           autoComplete="username"
         />
+        {/* Conditionally display error messages */}
         {errors.username && <Text style={styles.errorMessage}>{errors.username}</Text>}
       </View>
 
@@ -103,30 +116,33 @@ export default function RegisterScreen({ onNavigateToLogin }) {
       <View style={styles.formField}>
         <Text style={styles.label}>Email:</Text>
         <TextInput
-          style={[styles.formInput, errors.email && styles.inputError]}
+          style={[styles.formInput, errors.email && styles.inputError]} // Conditional styling to highlight errors
           placeholder="Enter your email..."
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
-          keyboardType="email-address"
+          keyboardType="email-address" // Mobile optimised keyboard layout
           autoComplete="email"
         />
+        {/* Conditionally display error messages */}
         {errors.email && <Text style={styles.errorMessage}>{errors.email}</Text>}
       </View>
 
-      {/* Names */}
+      {/* First/Given name */}
       <View style={styles.formField}>
         <Text style={styles.label}>First/Given name: </Text>
         <TextInput
-          style={[styles.formInput, errors.firstName && styles.inputError]}
+          style={[styles.formInput, errors.firstName && styles.inputError]} // Conditional styling to highlight errors
           placeholder="Enter your first or given name..."
           value={firstName}
           onChangeText={setFirstName}
-          autoCapitalize="words"
+          autoCapitalize="words" // Capitalise any lowercase words
         />
+        {/* Conditionally display error messages */}
         {errors.firstName && <Text styles={styles.errorMessage}>{errors.firstName}</Text>}
       </View>
 
+      {/* Last/Family Name (Optional) */}
       <View style={styles.formField}>
         <Text style={styles.label}>Last/Family name: </Text>
         <TextInput
@@ -145,19 +161,22 @@ export default function RegisterScreen({ onNavigateToLogin }) {
           <Picker
             selectedValue={selectedSkillId}
             onValueChange={setSelectedSkillId}
-            enabled={!skillsLoading}
+            enabled={!skillsLoading} // Only enable if skills are not loading
             style={styles.picker}
           >
+            {/* Default drop down choice */}
             <Picker.Item label="Select your skill level..." value="" />
+            {/* Picker items mapped from useAllSkills customHook */}
             {skills.map((skill) => (
               <Picker.Item
                 key={skill.id}
-                label={`${skill.level} - ${skill.description.substring(0, 60)}...`}
+                label={`${skill.level} - ${skill.description.substring(0, 60)}...`} // Capped characters at 60 for mobile first design
                 value={skill.id}
               />
             ))}
           </Picker>
         </View>
+        {/* Conditionally display error messages */}
         {errors.skill && <Text style={styles.errorMessage}>{errors.skill}</Text>}
       </View>
 
@@ -165,13 +184,14 @@ export default function RegisterScreen({ onNavigateToLogin }) {
       <View style={styles.formField}>
         <Text style={styles.label}>Password: </Text>
         <TextInput
-          style={[styles.formInput, errors.password && styles.inputError]}
+          style={[styles.formInput, errors.password && styles.inputError]} // Conditional styling to highlight errors
           placeholder="Enter your password..."
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
+          secureTextEntry // Ensures passwords are not visible when being entered
           autoComplete="password-new"
         />
+        {/* Conditionally display error messages */}
         {errors.password && <Text style={styles.errorMessage}>{errors.password}</Text>}
       </View>
 
@@ -183,27 +203,33 @@ export default function RegisterScreen({ onNavigateToLogin }) {
           placeholder="Re-enter your password..."
           value={confirmPassword}
           onChangeText={setConfirmPassword}
-          secureTextEntry
+          secureTextEntry // Ensures passwords are not visible when being entered
         />
+        {/* Conditionally display error messages */}
         {errors.confirmPassword && (
           <Text style={styles.errorMessage}>{errors.confirmPassword}</Text>
         )}
       </View>
 
+      {/* Submit Button */}
       <TouchableOpacity
-        style={[styles.submitButton, isPending && styles.buttonLoading]}
-        onPress={validateAndSubmit}
-        disabled={isPending}
+        style={[styles.submitButton, isPending && styles.buttonLoading]} // Conditional styling to show pending state
+        onPress={validateAndSubmit} // Runs validation and submit handler for all form data
+        disabled={isPending} // Cannot be clicked while pending to avoid duplicate submissions
       >
+        {/* Conditionally display button text for strong UX */}
         <Text style={styles.buttonText}>{isPending ? "Creating your account..." : "Register"}</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.secondaryButton} onPress={onNavigateToLogin}>
+
+      {/* Sign In Button */}
+      <TouchableOpacity style={styles.secondaryButton} onPress={onNavigateToLogin}> 
         <Text style={styles.secondaryButtonText}>Already have an account? Sign in</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
+// Register Screen styling
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
