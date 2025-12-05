@@ -8,6 +8,7 @@ import AddClimbScreen from "../screens/add-climb/AddClimb";
 export default function AppContent() {
   const { user } = useAuth();
   const [currentScreen, setCurrentScreen] = useState("login");
+  const [selectedClimb, setSelectedClimb] = useState(null);
 
   console.log("AuthGate render — user:", user);
 
@@ -18,18 +19,32 @@ export default function AppContent() {
         return (
           <HomeScreen
             onNavigateToAddClimb={() => setCurrentScreen("addClimb")}
-            onNavigateToAddAttempt={() => setCurrentScreen("addAttempt")}
+            onNavigateToAddAttempt={(climb) => {
+              setSelectedClimb(climb);
+              setCurrentScreen("addAttempt");
+            }}
           />
         );
       case "addClimb":
         return <AddClimbScreen onNavigateToHome={() => setCurrentScreen("home")} />;
       case "addAttempt":
-        return <AddAttemptScreen onNavigateToHome={() => setCurrentScreen("home")} />;
+        return (
+          <AddAttemptScreen
+            climb={selectedClimb}
+            onNavigateToHome={() => {
+              setSelectedClimb(null);
+              setCurrentScreen("home");
+            }}
+          />
+        );
       default:
         return (
           <HomeScreen
             onNavigateToAddClimb={() => setCurrentScreen("addClimb")}
-            onNavigateToAddAttempt={() => setCurrentScreen("addAttempt")}
+            onNavigateToAddAttempt={(climb) => {
+              setSelectedClimb(climb);
+              setCurrentScreen("addAttempt");
+            }}
           />
         );
     }

@@ -18,7 +18,15 @@ export default function HomeScreen({onNavigateToAddClimb, onNavigateToAddAttempt
   const attempts = attemptsData.attempts || [];
 
   const renderCard = (item, isAttempt = false) => (
-    <View style={styles.card} key={item.id}>
+    <TouchableOpacity 
+    style={styles.card} 
+    key={item.id}
+    onPress={() => {
+      if(!isAttempt) {
+        onNavigateToAddAttempt(item);
+      }
+    }}
+    >
       {isAttempt ? (
         <>
           <Text style={styles.attemptDetails}>
@@ -46,7 +54,7 @@ export default function HomeScreen({onNavigateToAddClimb, onNavigateToAddAttempt
           <Text style={styles.addedBy}>Climb added by: {item.username}</Text>
         </>
       )}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
