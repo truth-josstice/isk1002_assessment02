@@ -1,57 +1,89 @@
-import { useEffect, useState } from "react";
-import clsx from "clsx";
-import styles from "../styles/StarRating.module.scss";
+import { useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function StarRating({ initialRating = 0, onRatingChange, isSubmitting = false }) {
+export default function StarRating({ initialRating = 0, onRatingChange, disabled = false }) {
   // Set up a state for rating using UI
   const [rating, setRating] = useState(initialRating);
-  // Set up a state to light up stars as you hover
-  const [hover, setHover] = useState(0);
-  // Set up a state where movies are just rated, just to avoid repeat ratings
-  const [justRated, setJustRated] = useState(false);
 
-  // Set the initial rating to the initial rating of the movie (default to 0 if rating is null)
-  useEffect(() => {
-    setRating(initialRating);
-  }, [initialRating]);
-
-  // rating handler!
-  const handleRating = async (newRating) => {
+  // rating handler
+  const handleRating = (newRating) => {
     setRating(newRating);
-    setJustRated(true);
 
     if (onRatingChange) {
-      await onRatingChange(newRating);
+      onRatingChange(newRating);
     }
-
-    setTimeout(() => setJustRated(false), 2000);
   };
 
-  let statusText = "Rate this movie";
-  if (rating > 0) statusText = `${rating} stars!`;
-
   return (
-    <div className={styles.starRating}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          className={clsx(
-            styles.star,
-            star <= (hover || rating) && styles.filled,
-            isSubmitting && styles.disabled,
-            justRated && styles.justRated
-          )}
-          onClick={() => !isSubmitting && handleRating(star)}
-          onMouseEnter={() => !isSubmitting && setHover(star)}
-          onMouseLeave={() => !isSubmitting && setHover(0)}
-          disabled={isSubmitting}
-          type="button"
-        >
-          ⭐
-        </button>
-      ))}
-      <br />
-      <p className={clsx(styles.ratingText, justRated && styles.success)}>{statusText}</p>
-    </div>
+    <View style={styles.container}>
+      <Text style={styles.label}>Fun Rating:</Text>
+      <View style={styles.starsContainer}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity
+            key={star}
+            className={[
+              styles.starButton,
+              star <= rating && styles.filledStar,
+              disabled && styles.disabled,
+            ]}
+            onPress={() => !disabled && handleRating(star)}
+            disabled={disabled}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.starIcon, star <= rating && styles.filledStarIcon]}>⭐</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <Text style={styles.ratingText}>
+        {rating > 0 ? `${rating} / 5 stars` : "Tap stars to rate"}
+      </Text>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 8,
+  },
+  starsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 8,
+  },
+  starButton: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "#f3f4f6",
+    width: 56,
+    height: 56,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  filledStar: {
+    backgroundColor: "#fef3c7",
+    transform: [{ scale: 1.1 }],
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  starIcon: {
+    fontSize: 32,
+    opacity: 0.3,
+  },
+  filledStarIcon: {
+    color: "#f59e0b",
+    opacity: 1,
+  },
+  ratingText: {
+    fontSize: 14,
+    color: "#6b7280",
+    textAlign: "center",
+    marginTop: 8,
+  },
+});
