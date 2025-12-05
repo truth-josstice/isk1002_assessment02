@@ -114,7 +114,7 @@ export default function LoginScreen({ onNavigateToRegister }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#b7c4d2ff",
     padding: 32,
     justifyContent: "center",
   },

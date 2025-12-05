@@ -75,13 +75,14 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
   };
 
   return (
-    <ScrollView>
-      <View>
-        <TouchableOpacity>
-          <Text></Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      {/* Header with Back Button */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={onNavigateToHome} style={styles.backButton}>
+          <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
-        <Text></Text>
-        <View />
+        <Text style={styles.title}>Log Attempt</Text>
+        <View style={{ width: 60 }} />
       </View>
 
       {/* Climb Info Card */}
@@ -155,7 +156,7 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#b7c4d2ff",
   },
   scrollContent: {
     padding: 20,
@@ -174,6 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   header: {
+    marginTop: 24,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

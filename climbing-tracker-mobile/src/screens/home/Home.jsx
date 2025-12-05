@@ -11,21 +11,21 @@ import { useAuth } from "../../context/AuthContext";
 import { useAllClimbs } from "../../utilities/customHooks/useClimbs";
 import { useAllAttempts } from "../../utilities/customHooks/useAttempts";
 
-export default function HomeScreen({onNavigateToAddClimb, onNavigateToAddAttempt}) {
+export default function HomeScreen({ onNavigateToAddClimb, onNavigateToAddAttempt }) {
   const { user, logout } = useAuth();
   const { data: climbs = [], isLoading: climbsLoading } = useAllClimbs();
   const { data: attemptsData = {}, isLoading: attemptsLoading } = useAllAttempts();
   const attempts = attemptsData.attempts || [];
 
   const renderCard = (item, isAttempt = false) => (
-    <TouchableOpacity 
-    style={styles.card} 
-    key={item.id}
-    onPress={() => {
-      if(!isAttempt) {
-        onNavigateToAddAttempt(item);
-      }
-    }}
+    <TouchableOpacity
+      style={styles.card}
+      key={item.id}
+      onPress={() => {
+        if (!isAttempt) {
+          onNavigateToAddAttempt(item);
+        }
+      }}
     >
       {isAttempt ? (
         <>
@@ -67,6 +67,7 @@ export default function HomeScreen({onNavigateToAddClimb, onNavigateToAddAttempt
 
         {/* Climbs Section */}
         <Text style={styles.sectionTitle}>Current Climbs Added by Users</Text>
+        <Text style={styles.infoText}>Click a climb to add an attempt!</Text>
         {climbsLoading ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color="#2563eb" />
@@ -105,7 +106,7 @@ export default function HomeScreen({onNavigateToAddClimb, onNavigateToAddAttempt
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#b7c4d2ff",
   },
   scrollContent: {
     paddingBottom: 120,
@@ -128,6 +129,14 @@ const styles = StyleSheet.create({
     color: "#0f172a",
     paddingHorizontal: 32,
     marginBottom: 16,
+  },
+  infoText: {
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#0f172a",
+    paddingHorizontal: 32,
+    marginBottom: 14,
   },
   attemptsSectionTitle: {
     textAlign: "center",
