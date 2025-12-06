@@ -107,11 +107,6 @@ export default function AddClimbScreen({ onNavigateToHome }) {
     });
   };
 
-  // Tiny helper function: formatted string for Gym Labels
-  const formatGymLabel = (gym) => {
-    return `${gym.name} - ${gym.city}`;
-  };
-
   // IF either gyms or styles are still loading, show an ActivityIndicator
   if (gymsLoading || stylesLoading) {
     return (
@@ -144,7 +139,7 @@ export default function AddClimbScreen({ onNavigateToHome }) {
 
             {/* Map using formatted string helper function for each picker item */}
             {gyms.map((gym) => (
-              <Picker.Item key={gym.id} label={formatGymLabel(gym)} value={gym.id.toString()} />
+              <Picker.Item key={gym.id} label={`${gym.name} - ${gym.city}`} value={gym.id.toString()} />
             ))}
           </Picker>
         </View>
