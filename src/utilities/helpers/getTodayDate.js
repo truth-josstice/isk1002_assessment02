@@ -11,12 +11,17 @@ Features:
 Usage: Default value for optional "Set Date" field in AddClimb function
 */
 
+/**
+ * @getMonth returns index of month (0-11), so +1 for correct month (1-12)
+ * @padStart ensures no single digit months (adds a 0 to any single digit months)
+ * @returns Today's date in ISO 8601 Format without current time: YYYY-MM-DD
+ * 
+ * Example usage:  
+ * const today = getTodayDate(); // "2025-12-06"
+ */
 export const getTodayDate = () => {
   const today = new Date();
   
-  // NOTE: 
-  // - getMonth returns index of month (0-11), so +1 for correct month (1-12)
-  // - padStart(2, "0") ensures no single digit months (adds a 0 to any single digit months)
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
     today.getDate()
   ).padStart(2, "0")}`;
