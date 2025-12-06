@@ -39,7 +39,7 @@ export default function HomeScreen({ onNavigateToAddClimb, onNavigateToAddAttemp
   // User attempts data is object of objects, blank object as failsafe
   const { data: attemptsData = {}, isLoading: attemptsLoading } = useAllAttempts();
 
-  // Convert attempts data from received object into an array of objects, with blank array as failsafe
+  // Normalise API response data to array
   const attempts = attemptsData.attempts || [];
 
   /**

@@ -35,7 +35,7 @@ import { useRegisterUser } from "../../utilities/customHooks/useAuth";
 import { useAllSkills } from "../../utilities/customHooks/useInfo";
 
 export default function RegisterScreen({ onNavigateToLogin }) {
-  // Simple state management for Register fields
+  // Simple state management for Register fields passed to the useRegisterUser Tanstack Query mutation
   // Using individual useState for form simplicity (could useReducer for more complicated/longer forms)
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
