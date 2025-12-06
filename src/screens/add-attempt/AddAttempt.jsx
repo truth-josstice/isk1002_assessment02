@@ -1,3 +1,20 @@
+/* 
+AddAttemptScreen
+Purpose: Allows authenticated users to add attempts on any existing climbs
+
+Features:
+- Simple state management for form/rating inputs - could upgrade to useReducer if forms become more complex in later development
+- StarRating UI for simple and understandable rating system:
+  - Instant visual feedback
+  - Simple interaction (touch targets)
+  - Clear state representation (filled/empty stars)
+- Form validation rules matching API requirements:
+  - climb.id: foreign key, required, passed from HomeScreen parent component as prop
+  - funRating: required
+  - comments: maxLength 500 characters
+  - completed: boolean toggle switch, required
+*/
+
 import {
   ActivityIndicator,
   Alert,
@@ -9,21 +26,28 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useAddAttempt } from "../../utilities/customHooks/useAttempts";
 import StarRating from "../../components/StarRating";
-import { useState } from "react";
 
+// Accepts navigation prop from AppContent parent component, climb prop from HomeScreen parent component
 export default function AddAttemptScreen({ climb, onNavigateToHome }) {
+  // Current user is obtained from AuthContext
   const { user } = useAuth();
+
+  // Add attempt Tanstack Query mutation
   const { mutate: addAttempt, isPending } = useAddAttempt();
 
+  // Simple state management for all form input data to attach to useAddAttempt Tanstack Query mutation
   const [funRating, setFunRating] = useState(0);
   const [comments, setComments] = useState("");
   const [completed, setCompleted] = useState(false);
+
+  // Simple error state for form validation errors - remove when validation succeeds
   const [errors, setErrors] = useState({});
 
-  // Handle cases where the climb isn't correctly passed via props
+  // Handle cases where the climb isn't correctly passed via props - should not occur, but here as failsafe for network/unknown edge cases
   if (!climb) {
     return (
       <View style={styles.errorContainer}>
@@ -35,33 +59,47 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
     );
   }
 
+  // Form data validation before being passed to mutation
   const validateForm = () => {
+    // Create a blank error object for any validation errors
     const newErrors = {};
 
+    // funRating: required
     if (!funRating) newErrors.rating = "Please rate your attempt";
+
+    // comments: maxLength 500 characters
     if (comments.length > 500) newErrors.comments = "Comments cannot exceed 500 characters";
 
+    // Attach any errors to the newErrors object
     setErrors(newErrors);
+
+    // Only return when newErrors has 0 items
     return Object.keys(newErrors).length === 0;
   };
 
+  // Form submission handler
   const handleSubmit = () => {
+    // IF form is not valid, return early
     if (!validateForm()) return;
 
+    // If user item is not attached, for edge-cases
     if (!user.id) {
       Alert.alert("Error", "Unable to authenticate user");
     }
 
+    // Form data
     const attemptData = {
-      climb_id: climb.id,
-      user_id: user.id,
-      fun_rating: funRating,
-      completed: completed,
-      ...(comments.trim() && { comments: comments.trim() }),
+      climb_id: climb.id, // Passes directly from HomeScreen prop
+      user_id: user.id, // user.id extracted from AuthContext
+      fun_rating: funRating, // Fun rating handled by StarRating UI component will always be number, so no INT/Number forcing required
+      completed: completed, // Boolean from toggle switch, defaults to false
+      ...(comments.trim() && { comments: comments.trim() }), // Only attach a comment if there is one, otherwise send nothing not an empty string
     };
 
-    console.log("Sending attempt data:", attemptData);
-
+    // Tanstack Mutation function
+    // - Data preparation with validation
+    // - Mutation call with success/error handling
+    // - Navigation on success, user feedback on error
     addAttempt(attemptData, {
       onSuccess: () => {
         Alert.alert("Success", "Attempt logged successfully!");
@@ -75,14 +113,21 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
   };
 
   return (
+    // ScrollView container for the entire form if needed
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+
       {/* Header with Back Button */}
       <View style={styles.header}>
+        
+        {/* Back Button */}
         <TouchableOpacity onPress={onNavigateToHome} style={styles.backButton}>
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
+        
         <Text style={styles.title}>Log Attempt</Text>
-        <View style={{ width: 60 }} />
+        
+        {/* Styling View for consistent display */}
+        <View style={{ width: 60 }} /> 
       </View>
 
       {/* Climb Info Card */}
@@ -90,15 +135,18 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
         <Text style={styles.climbStyle}>{climb.style_name}</Text>
         <Text style={styles.climbGrade}>Grade: {climb.difficulty_grade}</Text>
         <Text style={styles.climbGym}>{climb.gym_name}</Text>
+        {/* Ensures set data value of climb appears in user friendly format */}
         {climb.set_date && (
           <Text style={styles.climbDate}>
+            {/* Current scale of the application is only for Australian users */}
             Set: {new Date(climb.set_date).toLocaleDateString("en-AU")}
           </Text>
         )}
       </View>
 
-      {/* Star Rating */}
+      {/* Star Rating UI Component*/}
       <StarRating initialRating={funRating} onRatingChange={setFunRating} disabled={isPending} />
+      {/* Conditionally render any rating errors */}
       {errors.rating && <Text style={styles.errorMessage}>{errors.rating}</Text>}
 
       {/* Completed Toggle */}
@@ -106,9 +154,11 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
         <View>
           <Text style={styles.label}>Completed:</Text>
           <Text style={styles.subLabel}>
+            {/* More user friendly text rather than boolean T/F */}
             {completed ? "You sent this climb!" : "Still working on it"}
           </Text>
         </View>
+        {/* The switch itself - defaults to false */}
         <Switch
           value={completed}
           onValueChange={setCompleted}
@@ -118,9 +168,10 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
         />
       </View>
 
-      {/* Comments */}
+      {/* Comments - Optional but important, allows users to be reflective about their climbing */}
       <View style={[styles.formField, errors.comments && styles.inputError]}>
         <Text style={styles.label}>Comments (optional):</Text>
+        
         <TextInput
           style={[styles.textInput, styles.textArea]}
           value={comments}
@@ -133,7 +184,11 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
           maxLength={500}
           editable={!isPending}
         />
+        
+        {/* Dynamically shows character length of entered comment */}
         <Text style={styles.charCount}>{comments.length} / 500 characters </Text>
+        
+        {/* Conditionally render any error messages */}
         {errors.comments && <Text style={styles.errorMessage}>{errors.comments}</Text>}
       </View>
 
@@ -141,8 +196,9 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
       <TouchableOpacity
         onPress={handleSubmit}
         style={[styles.submitButton, isPending && styles.submitButtonDisabled]}
-        disabled={isPending}
+        disabled={isPending} // Disabled while pending to avoid duplicate submissions
       >
+        {/* Conditional text for submit button based on Pending state */}
         {isPending ? (
           <ActivityIndicator size="small" color="white" />
         ) : (
@@ -153,6 +209,7 @@ export default function AddAttemptScreen({ climb, onNavigateToHome }) {
   );
 }
 
+// AddAttemptScreen styling
 const styles = StyleSheet.create({
   container: {
     flex: 1,
