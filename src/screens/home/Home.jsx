@@ -1,3 +1,20 @@
+/* 
+HomeScreen
+Purpose: Entry screen for authenticated users, showing currently uploaded climbs and user's existing attempts
+with buttons for Log Out, AddClimb, and clickable cards for AddAttempts
+Navigates to: 
+- LoginScreen (via LogOut Button)
+- AddClimbScreen
+- AddAttemptScreen
+
+Features:
+- Accepts navigation props from parent component for state based navigation
+- Conditional rendered cards in single function to keep codebase DRY
+- Passes climb data to child props through TouchableOpacity cards
+- Scrollable content for best UX
+- Simple logout button to remove token from SecureStore
+*/
+
 import React from "react";
 import {
   View,
@@ -11,23 +28,41 @@ import { useAuth } from "../../context/AuthContext";
 import { useAllClimbs } from "../../utilities/customHooks/useClimbs";
 import { useAllAttempts } from "../../utilities/customHooks/useAttempts";
 
+// Accepts navigation props from AppContent parent component
 export default function HomeScreen({ onNavigateToAddClimb, onNavigateToAddAttempt }) {
+  // Current user taken from AuthContext, logout removes token from SecureStore
   const { user, logout } = useAuth();
+
+  // Climb data is an array of objects, blank array as failsafe
   const { data: climbs = [], isLoading: climbsLoading } = useAllClimbs();
+
+  // User attempts data is object of objects, blank object as failsafe
   const { data: attemptsData = {}, isLoading: attemptsLoading } = useAllAttempts();
+
+  // Convert attempts data from received object into an array of objects, with blank array as failsafe
   const attempts = attemptsData.attempts || [];
 
+  /**
+   * Renders a card for either a climb or an attempt
+   * @param {Object} item - The climb or attempt data
+   * @param {boolean} isAttempt - Whether this is an attempt card
+   * @returns {JSX.Element} Card component
+   */
   const renderCard = (item, isAttempt = false) => (
+    // Tappable Card Wrapper
     <TouchableOpacity
       style={styles.card}
-      key={item.id}
+      key={item.id} // Extracts and attaches each item's id to the mapped card
+      // IF the card is not an attempt, attach the item prop to the child component
       onPress={() => {
         if (!isAttempt) {
           onNavigateToAddAttempt(item);
         }
       }}
     >
+      {/* Conditionally fill the card details */}
       {isAttempt ? (
+        // If the item in the map is an attempt:
         <>
           <Text style={styles.attemptDetails}>
             {item.climb.style_name} - {item.climb.gym_name}
@@ -40,10 +75,12 @@ export default function HomeScreen({ onNavigateToAddClimb, onNavigateToAddAttemp
           </Text>
           {item.comments && <Text style={styles.comments}>"{item.comments}"</Text>}
           <Text style={styles.date}>
+            {/* Display AU format time (current application scales only to local Australian users) */}
             Attempted at: {new Date(item.attempted_at).toLocaleDateString("en-AU")}
           </Text>
         </>
       ) : (
+        // If the item in the map is NOT an attempt:
         <>
           <Text style={styles.routeStyle}>{item.style_name}</Text>
           <Text style={styles.grade}>Grade: {item.difficulty_grade}</Text>
@@ -68,6 +105,8 @@ export default function HomeScreen({ onNavigateToAddClimb, onNavigateToAddAttemp
         {/* Climbs Section */}
         <Text style={styles.sectionTitle}>Current Climbs Added by Users</Text>
         <Text style={styles.infoText}>Tap a climb to add an attempt!</Text>
+
+        {/* Conditionally render climbs for blank climbs list, existing climbs list, loading state */}
         {climbsLoading ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color="#2563eb" />
@@ -76,16 +115,20 @@ export default function HomeScreen({ onNavigateToAddClimb, onNavigateToAddAttemp
         ) : climbs.length === 0 ? (
           <Text style={styles.emptyText}>No climbs yet, add a climb to get started!</Text>
         ) : (
+          // Map powered by the renderCard function
           <View style={styles.list}>{climbs.map((climb) => renderCard(climb, false))}</View>
         )}
 
         {/* Attempts Section */}
         <Text style={styles.attemptsSectionTitle}>My Recent Attempts</Text>
+
+        {/* Conditionally render attempts for blank attempts list, existing attempts list, loading state */}
         {attemptsLoading ? (
           <ActivityIndicator size="small" color="#2563eb" />
         ) : attempts.length === 0 ? (
           <Text style={styles.emptyText}>No attempts logged yet - wanna go climbing?</Text>
         ) : (
+          // Map powered by the renderCard function
           <View style={styles.attemptsList}>
             {attempts.map((attempt) => renderCard(attempt, true))}
           </View>
@@ -93,9 +136,12 @@ export default function HomeScreen({ onNavigateToAddClimb, onNavigateToAddAttemp
       </ScrollView>
 
       {/* Floating Buttons */}
+      {/* Logout button - sets user in AuthContext to null (AuthContext handles navigation) */}
       <TouchableOpacity onPress={logout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
+
+      {/* Add Climb button - navigates to AddClimbScreen */}
       <TouchableOpacity onPress={onNavigateToAddClimb} style={styles.addClimbButton}>
         <Text style={styles.addButtonIcon}>Add Climb</Text>
       </TouchableOpacity>
@@ -103,6 +149,7 @@ export default function HomeScreen({ onNavigateToAddClimb, onNavigateToAddAttemp
   );
 }
 
+// HomeScreen content styling
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
