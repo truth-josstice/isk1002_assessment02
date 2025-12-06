@@ -6,32 +6,29 @@ This project is an Expo Application developed for Android, using an existing Fla
 
 ---
 
-## Table of Contents
-
----
-
 ## Backend API
 
 This mobile app connects to a Flask-based REST API that I developed separately.
 
-### API Features:
+### API Features
 
 - JWT Authentication
 - PostgreSQL database
 - RESTful endpoints for climbs and attempts
 - Data validation with Marshmallow schemas
 
-### API Repository:
+### API Repository
 
-[https://github.com/yourusername/climbing-api](https://github.com/yourusername/climbing-api)
+[Climbing Tracker of Truth and Josstice Flask API](https://github.com/truth-josstice/dev1002_assessment03)
 
-### Live API:
+### Live API
 
-[https://your-api.herokuapp.com](https://your-api.herokuapp.com)
+[Climbing Tracker of Truth and Josstice - Render Deployed API]
 
-### To Run Locally:
+### To Run Locally
 
 1. Clone the API repo
 2. Set up Python environment
 3. Configure database
 4. Run `flask run`
+
