@@ -1,4 +1,24 @@
-/* eslint-disable react/jsx-props-no-spreading */
+/* 
+Register Screen
+Purpose: Allows new users to register an account to use authorised features of the application.
+Features: 
+- State management for form/picker fields to attach to register request
+- Client side validation of all form/picker fields to attach to register request for instant user feedback:
+  - Username: required
+  - Email: required, correct email format
+  - Password: complexity requirements
+  - Password confirmation: must match password
+  - First Name: required
+  - Skill level: ENUM, required
+- Attaches newly registered user to Authorisation Context
+
+Security notes:
+- Passwords are never stored in plain text, and never sent in responses from API
+- SecureText fields hide password input
+- Token storage handled by AuthContext/SecureStore
+*/ 
+
+
 import { useState } from "react";
 import {
   View,
@@ -16,6 +36,7 @@ import { useAllSkills } from "../../utilities/customHooks/useInfo";
 
 export default function RegisterScreen({ onNavigateToLogin }) {
   // Simple state management for Register fields
+  // Using individual useState for form simplicity (could useReducer for more complicated/longer forms)
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +45,7 @@ export default function RegisterScreen({ onNavigateToLogin }) {
   const [lastName, setLastName] = useState("");
   const [selectedSkillId, setSelectedSkillId] = useState("");
 
-  // Blank error object for error displays
+  // Blank error object for validation errors - Cleared on successful validation
   const [errors, setErrors] = useState({});
 
   // Once the account is registered, log the user into the AuthContext
@@ -36,6 +57,7 @@ export default function RegisterScreen({ onNavigateToLogin }) {
   const { data: skills = [], isLoading: skillsLoading } = useAllSkills();
 
   // Password Regex rules: 1 uppercase, one lowercase, one number, one special symbol, 8 char length
+  // Complexity matches backend complexity requirements
   const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
 
@@ -74,7 +96,7 @@ export default function RegisterScreen({ onNavigateToLogin }) {
           password,
           email,
           first_name: firstName, // Match the SQL model first_name
-          ...(lastName && { last_name: lastName }), // IF last name is provided use it, otherwise do not provide
+          ...(lastName && { last_name: lastName }), // IF last name is provided use it, otherwise do not provide an empty string
           skill_level_id: Number(selectedSkillId), // Ensure selected skill ID is converted to a number
         },
 
