@@ -79,8 +79,11 @@ This mobile app connects to a Flask-based REST API that I developed separately. 
 ## Installation and Setup
 
 1. Clone or download the project repo
-2. Create a .env file in the root directory with the backend API address below if wanting to work directly with deployed API following .env.example
-3. Alternatively, run locally by following the API instructions above
+2. Create a .env file in the root directory with the backend API address above if wanting to work directly with deployed API following (.env.example)
+
+- Note: the backend API runs on Render, and will need time to spin up, it is advised to visit the API url and await the spin up to avoid any errors
+
+3. Alternatively, run locally by following the API instructions above, ensuring you run the backend api on `PORT 5000`
 4. Type the below command for quick setup (recommended):
 
 ```bash
