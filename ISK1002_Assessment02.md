@@ -1,3 +1,5 @@
+![](assets/images/Bouldering.jpg)
+
 # Busting the Plateau: A Beginner's Guide to Ethical App Development
 
 _Building a privacy aware bouldering tracker as a beginner developer, and how to create a simple niche application!_
@@ -249,10 +251,10 @@ const renderCard = (item, isAttempt = false) => (
           {item.climb.style_name} - {item.climb.gym_name}
         </Text>
         <Text style={styles.funRating}>
-          Fun: {"⭐".repeat(item.fun_rating)} ({item.fun_rating}/5)
+          Fun: {"*".repeat(item.fun_rating)} ({item.fun_rating}/5)
         </Text>
         <Text style={styles.completed}>
-          {item.completed ? "✓ Sent it!" : "✗ Still projecting it!"}
+          {item.completed ? "Sent it!" : "Still projecting it!"}
         </Text>
         {item.comments && <Text style={styles.comments}>"{item.comments}"</Text>}
         <Text style={styles.date}>
