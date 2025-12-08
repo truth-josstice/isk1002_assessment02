@@ -2,6 +2,8 @@
 
 **A mobile climbing tracker application built with React Native/Expo that connects to a Flask REST API. Tracks your climbs and attempts with a clean, intuitive interface.**
 
+To follow my developer journey, and this build specifically, head to [my dev.to article](https://dev.to/truthjosstice/a-beginner-builds-an-expo-app-2lhl)
+
 ![An example image of a bouldering wall](./assets/images/Bouldering.jpg)
 
 ## Tech Stack
